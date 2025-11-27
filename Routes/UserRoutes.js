@@ -1,9 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const bcrypt = require('../Utils/BcryptAdapter');
 const UserSchema = require('../Models/User');
 const UserController = require('../Controllers/UserController'); //Importando el controllador
-const multer = require('multer');
+let multer;
+try {
+    multer = require('multer');
+} catch (error) {
+    console.warn('multer no está disponible, la carga de archivos quedará deshabilitada');
+}
 const userController = new UserController(); // creando una instancia de ese controlador
 
 router.get('/user', async (req, res) => {
@@ -106,47 +111,51 @@ router.post('/login', (req, res) => {
     })
 })
 
-//Configuracion de la libreria multer
-const storage = multer.diskStorage({
-    destination: function(req, file, cb){        
-        cb(null, 'uploads/')
-    },
-    filename: function(req, file, cb){
-        cb(null, Date.now() + '-' + file.originalname)
-    }
-});
+if (multer) {
+    const storage = multer.diskStorage({
+        destination: function(req, file, cb){
+            cb(null, 'uploads/')
+        },
+        filename: function(req, file, cb){
+            cb(null, Date.now() + '-' + file.originalname)
+        }
+    });
 
-const fileFilter = (req, file, cb) => {    
-    if(file.mimetype.startsWith('image/')){
-        cb(null, true)
-    }else{
-        cb(new Error('El archivo no es una imagen'))
-    }
-}
-
-const upload = multer({ storage: storage, fileFilter: fileFilter})
-
-// Servicio web para el almacenamiento de archivos
-router.post('/upload/:id/user', upload.single('file'), (req, res) => {
-    if(!req.file){
-        return res.status(400).send({ 'status': 'error', 'message': 'No se proporciono ningun archivo'})
+    const fileFilter = (req, file, cb) => {
+        if(file.mimetype.startsWith('image/')){
+            cb(null, true)
+        }else{
+            cb(new Error('El archivo no es una imagen'))
+        }
     }
 
-    var id = req.params.id
+    const upload = multer({ storage: storage, fileFilter: fileFilter})
 
-    var updateUser = {
-        avatar: req.file.path
-    }
+    router.post('/upload/:id/user', upload.single('file'), (req, res) => {
+        if(!req.file){
+            return res.status(400).send({ 'status': 'error', 'message': 'No se proporciono ningun archivo'})
+        }
 
-    console.log(id)
+        var id = req.params.id
 
-    UserSchema.findByIdAndUpdate(id, updateUser, {new: true}).then((result) => {
-        res.send({"status": "success", "message": "Archivo subido correctamente"})
-    }).catch((error) => {
-        console.log(error)
-        res.send({"status": "success", "message" : "Error actualizando el registro"})
+        var updateUser = {
+            avatar: req.file.path
+        }
+
+        console.log(id)
+
+        UserSchema.findByIdAndUpdate(id, updateUser, {new: true}).then((result) => {
+            res.send({"status": "success", "message": "Archivo subido correctamente"})
+        }).catch((error) => {
+            console.log(error)
+            res.send({"status": "success", "message" : "Error actualizando el registro"})
+        })
+
     })
-
-})
+} else {
+    router.post('/upload/:id/user', (req, res) => {
+        res.status(503).send({ 'status': 'error', 'message': 'La carga de archivos está deshabilitada en este entorno' })
+    })
+}
 
 module.exports = router
