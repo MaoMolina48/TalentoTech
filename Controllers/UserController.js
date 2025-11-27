@@ -1,7 +1,12 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('../Utils/BcryptAdapter');
 const UserSchema = require('../Models/User')
-const jwt = require('jsonwebtoken')
-require('dotenv').config() // Obetenmos las variables de entorno
+const jwt = require('../Utils/TokenService')
+
+try {
+    require('dotenv').config()
+} catch (error) {
+    console.warn('dotenv no está disponible, se usarán valores por defecto');
+}
 
 class UserController {
 
@@ -24,7 +29,7 @@ class UserController {
             return { "status": "error", "message": "Contraseña incorrecta"}
         }
 
-        const token = jwt.sign({ userId: user._id, email: user.email, role: "admin" }, this.jwtSecret, { expiresIn: '1h' })
+        const token = jwt.sign({ userId: user._id, email: user.email, role: "admin" }, this.jwtSecret, 3600)
 
         return {"status": "success", "token": token}
 

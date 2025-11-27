@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSS TalentoTech - Evaluador de proyectos</title>
+    <style>
+      :root {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #1f2933;
+        background-color: #f5f6fa;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+      header {
+        background: linear-gradient(120deg, #1f6feb, #1fa2ff);
+        color: #fff;
+        padding: 2rem 1rem;
+        text-align: center;
+      }
+      main {
+        padding: 2rem 1rem 4rem;
+        max-width: 1100px;
+        margin: auto;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.2rem;
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+      }
+      form {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      }
+      label {
+        font-weight: 600;
+        display: block;
+        margin-top: 1rem;
+      }
+      input {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 1px solid #cfd8e3;
+      }
+      button {
+        margin-top: 1.5rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: #1f6feb;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      pre {
+        white-space: pre-wrap;
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 1rem;
+        border-radius: 10px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>DSS para proyectos de preinversión PYME</h1>
+      <p>
+        Motor de analítica financiera, técnica, de mercado y riesgo con simulación de Monte Carlo
+        y reportes ejecutivos listos para presentaciones en Bogotá.
+      </p>
+    </header>
+    <main>
+      <section>
+        <h2>Módulos</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>1. Módulo Financiero</h3>
+            <p>VAN, TIR, TIO, flujo de caja, escenarios y sensibilidad.</p>
+          </article>
+          <article class="card">
+            <h3>2. Técnico–Operativo</h3>
+            <p>Capacidad instalada, recursos y costos unitarios.</p>
+          </article>
+          <article class="card">
+            <h3>3. Mercado</h3>
+            <p>Demanda potencial, segmentación y precios objetivo.</p>
+          </article>
+          <article class="card">
+            <h3>4. Riesgo e IA</h3>
+            <p>Probabilidad de éxito/fracaso soportada en simulaciones.</p>
+          </article>
+          <article class="card">
+            <h3>5. Reportes</h3>
+            <p>Entregables ejecutivos y técnicos en formato estándar.</p>
+          </article>
+          <article class="card">
+            <h3>6. Administración</h3>
+            <p>Perfiles, permisos, usuarios y proyectos.</p>
+          </article>
+        </div>
+      </section>
+      <section>
+        <h2>Evaluación rápida</h2>
+        <form id="evaluationForm">
+          <label>Monto de inversión inicial (COP)</label>
+          <input type="number" name="initialInvestment" value="250000000" required />
+
+          <label>Tasa de descuento</label>
+          <input type="number" step="0.01" name="discountRate" value="0.18" />
+
+          <label>Tasa interna de oportunidad (TIO)</label>
+          <input type="number" step="0.01" name="opportunityRate" value="0.14" />
+
+          <label>Capital de trabajo</label>
+          <input type="number" name="workingCapital" value="25000000" />
+
+          <label>Capacidad instalada (unidades/año)</label>
+          <input type="number" name="capacityInstalled" value="12000" />
+
+          <label>Precio promedio (COP)</label>
+          <input type="number" name="price" value="45000" />
+
+          <label>Volatilidad para Monte Carlo</label>
+          <input type="number" step="0.01" name="volatility" value="0.12" />
+
+          <button type="submit">Evaluar proyecto</button>
+        </form>
+      </section>
+      <section>
+        <h2>Resultados</h2>
+        <pre id="results">Completa el formulario para obtener métricas.</pre>
+      </section>
+    </main>
+    <script>
+      const form = document.getElementById('evaluationForm');
+      const resultsContainer = document.getElementById('results');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const payload = {
+          financials: {
+            initialInvestment: Number(formData.get('initialInvestment')),
+            discountRate: Number(formData.get('discountRate')),
+            opportunityRate: Number(formData.get('opportunityRate')),
+            workingCapital: Number(formData.get('workingCapital')),
+            horizonYears: 5,
+            fixedCosts: 52000000,
+            variableCostPerUnit: 22000,
+          },
+          production: {
+            capacityInstalled: Number(formData.get('capacityInstalled')),
+            unitCost: 22000,
+          },
+          market: {
+            pricePerUnit: Number(formData.get('price')),
+            demandGrowth: 0.07,
+            baseDemand: Number(formData.get('capacityInstalled')) * 0.85,
+          },
+          simulation: {
+            volatility: Number(formData.get('volatility')),
+            iterations: 600,
+          },
+        };
+
+        resultsContainer.textContent = 'Calculando...';
+
+        try {
+          const response = await fetch('/api/project/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+          resultsContainer.textContent = JSON.stringify(
+            {
+              resumen: data.executiveSummary,
+              indicadores: data.financialMetrics,
+              sensibilidad: data.sensitivity,
+              simulacion: data.monteCarlo,
+            },
+            null,
+            2
+          );
+        } catch (error) {
+          resultsContainer.textContent = 'Error consultando la API: ' + error.message;
+        }
+      });
+    </script>
+  </body>
+</html>
